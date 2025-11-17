@@ -255,3 +255,10 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 <img src="https://api.star-history.com/svg?repos=pionxzh/chatgpt-exporter&type=Date" width="600" height="400" alt="Star History Chart" valign="middle">
 
 </div>
+
+
+install tampermonkey extension
+all run user scripts
+enable developer mode
+install userscript according to contributing
+install allow csp extension: https://chromewebstore.google.com/detail/allow-csp-content-securit/hnojoemndpdjofcdaonbefcfecpjfflh
