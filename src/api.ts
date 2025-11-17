@@ -353,7 +353,12 @@ const conversationApi = (id: string) => urlcat(apiUrl, '/conversation/:id', { id
 const conversationsApi = (offset: number, limit: number) => urlcat(apiUrl, '/conversations', { offset, limit })
 const fileDownloadApi = (id: string) => urlcat(apiUrl, '/files/:id/download', { id })
 const projectsApi = () => urlcat(apiUrl, '/gizmos/snorlax/sidebar', { conversations_per_gizmo: 0 })
-const projectConversationsApi = (gizmo: string, offset: number, limit: number) => urlcat(apiUrl, '/gizmos/:gizmo/conversations', { gizmo, cursor: offset, limit })
+const projectConversationsApi = (gizmo: string, offset: number, limit: number, cursor: string | number | null = null) => {
+    if(cursor){
+        return urlcat(apiUrl, '/gizmos/:gizmo/conversations', { gizmo, cursor: cursor })    
+    }
+    return urlcat(apiUrl, '/gizmos/:gizmo/conversations', { gizmo, cursor: offset, limit })
+}
 const accountsCheckApi = urlcat(apiUrl, '/accounts/check/v4-2023-04-27')
 
 export async function getCurrentChatId(): Promise<string> {
@@ -477,9 +482,14 @@ async function fetchConversations(offset = 0, limit = 20, project: string | null
     return fetchApi(url)
 }
 
-async function fetchProjectConversations(project: string, offset = 0, limit = 20): Promise<ApiConversations> {
-    const url = projectConversationsApi(project, offset, limit)
-    const { items } = await fetchApi< { items: ApiConversationItem[]; cursor: number | null }>(url)
+async function fetchProjectConversations(project: string, offset = 0, limit = 20, cursor: string | number | null = null): Promise<ApiConversations> {
+    const url = projectConversationsApi(project, offset, limit, cursor)
+    const response = await fetchApi< { items: ApiConversationItem[]; cursor: string | number | null }>(url)
+    let { items } = response;
+    if(response.cursor){
+        const page = await fetchProjectConversations(project, 0, limit, response.cursor)
+        items = items.concat(page.items);
+    }
     return {
         has_missing_conversations: false,
         items,
@@ -491,13 +501,13 @@ async function fetchProjectConversations(project: string, offset = 0, limit = 20
 
 export async function fetchAllConversations(project: string | null = null, maxConversations = 1000): Promise<ApiConversationItem[]> {
     const conversations: ApiConversationItem[] = []
-    const limit = project === null ? 100 : 50 // gizmos api uses a smaller limit
+    const batch_limit = project === null ? 100 : 50 // gizmos api uses a smaller limit
     let offset = 0
     while (true) {
         try {
             const result = project === null
-                ? await fetchConversations(offset, limit)
-                : await fetchProjectConversations(project, offset, limit)
+                ? await fetchConversations(offset, batch_limit)
+                : await fetchProjectConversations(project, offset, batch_limit)
             if (!result.items) {
                 // Handle potential API errors or empty responses
                 console.warn('fetchAllConversations received no items at offset:', offset)
@@ -506,9 +516,9 @@ export async function fetchAllConversations(project: string | null = null, maxCo
             conversations.push(...result.items)
             if (result.items.length === 0) break
             // Stop if we've reached the total reported by the API OR the user-defined limit
-            if (result.total !== null && offset + limit >= result.total) break
+            if (result.total !== null && offset + batch_limit >= result.total) break
             if (conversations.length >= maxConversations) break
-            offset += limit
+            offset += batch_limit
         }
         catch (error) {
             console.error('Error fetching conversations batch:', error)

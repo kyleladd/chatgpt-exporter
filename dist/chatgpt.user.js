@@ -1186,7 +1186,12 @@ html {
   const conversationsApi = (offset, limit) => _default(apiUrl, "/conversations", { offset, limit });
   const fileDownloadApi = (id) => _default(apiUrl, "/files/:id/download", { id });
   const projectsApi = () => _default(apiUrl, "/gizmos/snorlax/sidebar", { conversations_per_gizmo: 0 });
-  const projectConversationsApi = (gizmo, offset, limit) => _default(apiUrl, "/gizmos/:gizmo/conversations", { gizmo, cursor: offset, limit });
+  const projectConversationsApi = (gizmo, offset, limit, cursor = null) => {
+    if (cursor) {
+      return _default(apiUrl, "/gizmos/:gizmo/conversations", { gizmo, cursor });
+    }
+    return _default(apiUrl, "/gizmos/:gizmo/conversations", { gizmo, cursor: offset, limit });
+  };
   const accountsCheckApi = _default(apiUrl, "/accounts/check/v4-2023-04-27");
   async function getCurrentChatId() {
     if (isSharePage()) {
@@ -1279,9 +1284,14 @@ html {
     const url = conversationsApi(offset, limit);
     return fetchApi(url);
   }
-  async function fetchProjectConversations(project, offset = 0, limit = 20) {
-    const url = projectConversationsApi(project, offset, limit);
-    const { items } = await fetchApi(url);
+  async function fetchProjectConversations(project, offset = 0, limit = 20, cursor = null) {
+    const url = projectConversationsApi(project, offset, limit, cursor);
+    const response = await fetchApi(url);
+    let { items } = response;
+    if (response.cursor) {
+      const page = await fetchProjectConversations(project, 0, limit, response.cursor);
+      items = items.concat(page.items);
+    }
     return {
       has_missing_conversations: false,
       items,
@@ -1292,20 +1302,20 @@ html {
   }
   async function fetchAllConversations(project = null, maxConversations = 1e3) {
     const conversations = [];
-    const limit = project === null ? 100 : 50;
+    const batch_limit = project === null ? 100 : 50;
     let offset = 0;
     while (true) {
       try {
-        const result = project === null ? await fetchConversations(offset, limit) : await fetchProjectConversations(project, offset, limit);
+        const result = project === null ? await fetchConversations(offset, batch_limit) : await fetchProjectConversations(project, offset, batch_limit);
         if (!result.items) {
           console.warn("fetchAllConversations received no items at offset:", offset);
           break;
         }
         conversations.push(...result.items);
         if (result.items.length === 0) break;
-        if (result.total !== null && offset + limit >= result.total) break;
+        if (result.total !== null && offset + batch_limit >= result.total) break;
         if (conversations.length >= maxConversations) break;
-        offset += limit;
+        offset += batch_limit;
       } catch (error2) {
         console.error("Error fetching conversations batch:", error2);
         break;
