@@ -1,5 +1,5 @@
 import sanitize from 'sanitize-filename'
-import { dateStr, timestamp, unixTimestampToISOString } from './utils'
+import { dateStr, timestamp, unixTimestampToDateString, unixTimestampToISOString } from './utils'
 
 export function downloadFile(filename: string, type: string, content: string | Blob) {
     const blob = content instanceof Blob ? content : new Blob([content], { type })
@@ -41,6 +41,7 @@ export function getFileNameWithFormat(format: string, ext: string, {
         .replace('{timestamp}', timestamp())
         .replace('{chat_id}', chatId)
         .replace('{create_time}', _createTime)
+        .replace('{create_date}', unixTimestampToDateString(createTime))
         .replace('{update_time}', _updateTime)
         .concat(`.${ext}`)
 }

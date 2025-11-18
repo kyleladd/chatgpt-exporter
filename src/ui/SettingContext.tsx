@@ -5,6 +5,7 @@ import {
     KEY_FILENAME_FORMAT,
     KEY_META_ENABLED,
     KEY_META_LIST,
+    KEY_SHOW_MESSAGE_DATE_ENABLED,
     KEY_TIMESTAMP_24H,
     KEY_TIMESTAMP_ENABLED,
     KEY_TIMESTAMP_HTML,
@@ -32,6 +33,8 @@ const SettingContext = createContext({
 
     enableTimestamp: false,
     setEnableTimestamp: (_: boolean) => {},
+    showMessageDate: false,
+    setShowMessageDate: (_: boolean) => {},
     timeStamp24H: false,
     setTimeStamp24H: (_: boolean) => {},
     enableTimestampHTML: false,
@@ -52,6 +55,7 @@ export const SettingProvider: FC = ({ children }) => {
     const [format, setFormat] = useGMStorage(KEY_FILENAME_FORMAT, defaultFormat)
 
     const [enableTimestamp, setEnableTimestamp] = useGMStorage(KEY_TIMESTAMP_ENABLED, false)
+    const [showMessageDate, setShowMessageDate] = useGMStorage(KEY_SHOW_MESSAGE_DATE_ENABLED, false)
     const [timeStamp24H, setTimeStamp24H] = useGMStorage(KEY_TIMESTAMP_24H, false)
     const [enableTimestampHTML, setEnableTimestampHTML] = useGMStorage(KEY_TIMESTAMP_HTML, false)
     const [enableTimestampMarkdown, setEnableTimestampMarkdown] = useGMStorage(KEY_TIMESTAMP_MARKDOWN, false)
@@ -64,12 +68,14 @@ export const SettingProvider: FC = ({ children }) => {
     const resetDefault = useCallback(() => {
         setFormat(defaultFormat)
         setEnableTimestamp(false)
+        setShowMessageDate(false)
         setEnableMeta(false)
         setExportMetaList(defaultExportMetaList)
         setExportAllLimit(defaultExportAllLimit)
     }, [
         setFormat,
         setEnableTimestamp,
+        setShowMessageDate,
         setEnableMeta,
         setExportMetaList,
         setExportAllLimit,
@@ -83,6 +89,8 @@ export const SettingProvider: FC = ({ children }) => {
 
                 enableTimestamp,
                 setEnableTimestamp,
+                showMessageDate,
+                setShowMessageDate,
                 timeStamp24H,
                 setTimeStamp24H,
                 enableTimestampHTML,

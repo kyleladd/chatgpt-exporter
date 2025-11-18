@@ -6,7 +6,7 @@ import { useTitle } from '../hooks/useTitle'
 import { LOCALES } from '../i18n'
 import { getChatIdFromUrl } from '../page'
 import { getFileNameWithFormat } from '../utils/download'
-import { timestamp as _timestamp, dateStr, unixTimestampToISOString } from '../utils/utils'
+import { timestamp as _timestamp, dateStr, unixTimestampToDateString, unixTimestampToISOString } from '../utils/utils'
 import { IconCross, IconTrash } from './Icons'
 import { useSettingContext } from './SettingContext'
 import { Toggle } from './Toggle'
@@ -30,6 +30,7 @@ export const SettingDialog: FC<SettingDialogProps> = ({
         /* eslint-disable pionxzh/consistent-list-newline */
         format, setFormat,
         enableTimestamp, setEnableTimestamp,
+        showMessageDate, setShowMessageDate,
         timeStamp24H, setTimeStamp24H,
         enableTimestampHTML, setEnableTimestampHTML,
         enableTimestampMarkdown, setEnableTimestampMarkdown,
@@ -101,6 +102,8 @@ export const SettingDialog: FC<SettingDialogProps> = ({
                                         ,{' '}
                                         <Variable name="{create_time}" title={unixTimestampToISOString(createTime)} />
                                         ,{' '}
+                                        <Variable name="{create_date}" title={unixTimestampToDateString(createTime)} />
+                                        ,{' '}
                                         <Variable name="{update_time}" title={unixTimestampToISOString(updateTime)} />
                                     </p>
                                     <input className="Input mt-4" id="filename" value={format} onChange={e => setFormat(e.currentTarget.value)} />
@@ -162,6 +165,13 @@ export const SettingDialog: FC<SettingDialogProps> = ({
                                             </div>
                                             <div className="mt-2">
                                                 <Toggle
+                                                    label={t('Message Show Date')}
+                                                    checked={showMessageDate}
+                                                    onCheckedUpdate={setShowMessageDate}
+                                                />
+                                            </div>
+                                            <div className="mt-2">
+                                                <Toggle
                                                     label={t('Enable on HTML')}
                                                     checked={enableTimestampHTML}
                                                     onCheckedUpdate={setEnableTimestampHTML}
@@ -207,6 +217,8 @@ export const SettingDialog: FC<SettingDialogProps> = ({
                                                 <Variable name="{model_name}" title="text-davinci-002-render-sha" />
                                                 ,{' '}
                                                 <Variable name="{create_time}" title="2023-04-10T21:45:35.027Z" />
+                                                ,{' '}
+                                                <Variable name="{create_date}" title="2023-04-10" />
                                                 ,{' '}
                                                 <Variable name="{update_time}" title="2023-04-10T21:45:35.027Z" />
                                             </p>

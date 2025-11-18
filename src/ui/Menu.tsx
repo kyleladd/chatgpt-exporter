@@ -31,6 +31,7 @@ function MenuInner({ container }: { container: HTMLDivElement }) {
     const {
         format,
         enableTimestamp,
+        // showMessageDate,
         timeStamp24H,
         enableMeta,
         exportMetaList,

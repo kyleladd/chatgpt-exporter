@@ -29,6 +29,7 @@
   "Conversation Timestamp Description": "Будет отображаться на странице.",
   "Enable on HTML": "Включить для HTML-файлов",
   "Enable on Markdown": "Включить для файлов Markdown",
+  "Message Show Date": "Message Show Date",
   "Use 24-hour format": "Использовать 24-часовой формат (например, 23:59)",
   "Export Format": "Формат экспорта",
   "Export Metadata": "Экспорт метаданных",

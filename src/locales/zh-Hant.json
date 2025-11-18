@@ -29,6 +29,7 @@
   "Conversation Timestamp Description": "會顯示在頁面上。",
   "Enable on HTML": "在 HTML 檔案上啟用",
   "Enable on Markdown": "在 Markdown 檔案上啟用",
+  "Message Show Date": "Message Show Date",
   "Use 24-hour format": "使用24小時制 (例如 23:59)",
   "Export Format": "匯出格式",
   "Export Metadata": "匯出元資料",

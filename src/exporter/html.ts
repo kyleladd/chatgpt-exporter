@@ -1,6 +1,6 @@
 import JSZip from 'jszip'
 import { fetchConversation, getCurrentChatId, processConversation } from '../api'
-import { KEY_TIMESTAMP_24H, KEY_TIMESTAMP_ENABLED, KEY_TIMESTAMP_HTML, baseUrl } from '../constants'
+import { KEY_SHOW_MESSAGE_DATE_ENABLED, KEY_TIMESTAMP_24H, KEY_TIMESTAMP_ENABLED, KEY_TIMESTAMP_HTML, baseUrl } from '../constants'
 import i18n from '../i18n'
 import { checkIfConversationStarted, getUserAvatar } from '../page'
 import templateHtml from '../template.html?raw'
@@ -8,7 +8,7 @@ import { downloadFile, getFileNameWithFormat } from '../utils/download'
 import { fromMarkdown, toHtml } from '../utils/markdown'
 import { ScriptStorage } from '../utils/storage'
 import { standardizeLineBreaks } from '../utils/text'
-import { dateStr, getColorScheme, timestamp, unixTimestampToISOString } from '../utils/utils'
+import { dateStr, getColorScheme, timestamp, unixTimestampToDateString, unixTimestampToISOString } from '../utils/utils'
 import type { ApiConversationWithId, ConversationNodeMessage, ConversationResult } from '../api'
 import type { ExportMeta } from '../ui/SettingContext'
 
@@ -72,6 +72,7 @@ function conversationToHtml(conversation: ConversationResult, avatar: string, me
     const { id, title, model, modelSlug, createTime, updateTime, conversationNodes } = conversation
 
     const enableTimestamp = ScriptStorage.get<boolean>(KEY_TIMESTAMP_ENABLED) ?? false
+    const showMessageDate = ScriptStorage.get<boolean>(KEY_SHOW_MESSAGE_DATE_ENABLED) ?? false
     const timeStampHtml = ScriptStorage.get<boolean>(KEY_TIMESTAMP_HTML) ?? false
     const timeStamp24H = ScriptStorage.get<boolean>(KEY_TIMESTAMP_24H) ?? false
 
@@ -154,7 +155,19 @@ function conversationToHtml(conversation: ConversationResult, avatar: string, me
         if (showTimestamp) {
             const date = new Date(timestamp * 1000)
             // format: 20:12 / 08:12 PM
-            conversationTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: !timeStamp24H })
+            if(showMessageDate){
+                conversationTime = date.toLocaleString('en-US', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    year: '2-digit',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: !timeStamp24H
+                })
+            }
+            else{
+                conversationTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: !timeStamp24H })
+            }
             timestampHtml = `<time class="time" datetime="${date.toISOString()}" title="${date.toLocaleString()}">${conversationTime}</time>`
         }
 
@@ -189,6 +202,7 @@ function conversationToHtml(conversation: ConversationResult, avatar: string, me
                 .replace('{model}', model)
                 .replace('{mode_name}', modelSlug)
                 .replace('{create_time}', unixTimestampToISOString(createTime))
+                .replace('{create_date}', unixTimestampToDateString(createTime))
                 .replace('{update_time}', unixTimestampToISOString(updateTime))
 
             return [name, val] as const
@@ -205,6 +219,8 @@ function conversationToHtml(conversation: ConversationResult, avatar: string, me
 
     const html = templateHtml
         .replaceAll('{{title}}', title)
+        .replaceAll('{{create_datetime}}', unixTimestampToISOString(createTime))
+        .replaceAll('{{create_date}}', unixTimestampToDateString(createTime))
         .replaceAll('{{date}}', date)
         .replaceAll('{{time}}', time)
         .replaceAll('{{source}}', source)

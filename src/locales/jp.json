@@ -29,6 +29,7 @@
   "Conversation Timestamp Description": "ページに表示されます。",
   "Enable on HTML": "HTML ファイルで有効にする",
   "Enable on Markdown": "Markdown ファイルで有効にする",
+  "Message Show Date": "Message Show Date",
   "Use 24-hour format": "24時間形式を使用する (例: 23:59)",
   "Export Format": "エクスポートフォーマット",
   "Export Metadata": "メタデータをエクスポート",
